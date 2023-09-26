@@ -88,7 +88,32 @@ window.addEventListener('mousemove', (_event) => {
     mouse.x = (_event.clientX / sizes.width) * 2 - 1
     mouse.y = - (_event.clientY / sizes.height) * 2 + 1
 })
-
+let clickedObj = null;
+window.addEventListener('click', (_event) => {
+    if(currentIntersect) {
+        switch(currentIntersect.object) {
+            case object1:
+                toggleClickedObj(object1)
+                console.log("click on 1")
+                break
+            case object2:
+                toggleClickedObj(object2)
+                console.log("click on 2")
+                break
+            case object3:
+                toggleClickedObj(object3)
+                console.log("click on 3")
+                break
+        }
+    }
+})
+const toggleClickedObj = (obj) => {
+    if(clickedObj === obj) {
+        clickedObj = null
+    } else {
+        clickedObj = obj
+    }
+}
 /**
  * Camera
  */
@@ -116,6 +141,8 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  */
 const clock = new THREE.Clock()
 
+let currentIntersect = null
+
 const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime()
@@ -136,6 +163,21 @@ const tick = () =>
     }
     for(const intersect of intersects) {
         intersect.object.material.color.set('#0000ff')
+    }
+    if(clickedObj) {
+        clickedObj.material.color.set('#00ff00')
+    }
+
+    if(intersects.length) {
+        if(currentIntersect === null) {
+            console.log("mouse enter");
+        }
+        currentIntersect = intersects[0]
+    } else {
+        if(currentIntersect) {
+            console.log("mouse leave")
+        }
+        currentIntersect = null
     }
 
     // Update controls
