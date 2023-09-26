@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'lil-gui'
 
@@ -136,16 +137,41 @@ renderer.outputColorSpace = THREE.LinearSRGBColorSpace
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
+/*
+    Light
+*/
+const ambientLight = new THREE.AmbientLight('#ffffff', 0.4)
+const directionalLight = new THREE.DirectionalLight('#ffffff', 0.7)
+directionalLight.position.set(1, 2, 3)
+scene.add(ambientLight)
+scene.add(directionalLight)
+
+/*
+    Model
+*/
+const gltfLoader = new GLTFLoader()
+let gltfDuck = null;
+gltfLoader.load(
+    './models/Duck/glTF-Binary/Duck.glb',
+    (gltf) => {
+        gltfDuck = gltf
+        gltfDuck.scene.position.y = -1.2
+        scene.add(gltfDuck.scene)
+    }
+)
 /**
  * Animate
  */
 const clock = new THREE.Clock()
+let previousTime = 0
 
 let currentIntersect = null
 
 const tick = () =>
 {
     const elapsedTime = clock.getElapsedTime()
+    const deltaTime = elapsedTime - previousTime
+    previousTime = elapsedTime
 
     // Animate Object
     object1.position.y = Math.sin(elapsedTime * 0.3) * 1.5
@@ -180,6 +206,14 @@ const tick = () =>
         currentIntersect = null
     }
 
+    // Raycaster w/ Model
+    let modelIntersects = []
+    if(gltfDuck) {
+        modelIntersects = raycaster.intersectObject(gltfDuck.scene)
+    }
+    if(modelIntersects.length) {
+        gltfDuck.scene.rotation.y += deltaTime
+    }
     // Update controls
     controls.update()
 
